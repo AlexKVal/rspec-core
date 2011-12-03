@@ -208,6 +208,7 @@ module RSpec
     private
 
       RESERVED_KEYS = [
+        :description_args,
         :description,
         :example_group,
         :execution_result,
