@@ -269,9 +269,9 @@ module RSpec
         context "with a non-string" do
           it "provides the submitted description" do
             m = Metadata.new
-            m.process("group")
+            m.process(Object)
 
-            m[:example_group][:description].should eq("group")
+            m[:example_group][:description].should eq("Object")
           end
         end
 
