@@ -45,7 +45,7 @@ module RSpec
         end
 
         def description
-          build_description_from(*self[:description_args])
+          store(:description, build_description_from(*self[:description_args]))
         end
 
       private
