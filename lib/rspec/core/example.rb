@@ -19,6 +19,12 @@ module RSpec
 
       delegate_to_metadata :description, :full_description, :execution_result, :file_path, :pending, :location
 
+      # def self.delegate_to_metadata_methods(*keys)
+      #   keys.each {|key| instance_eval(%[def #{key}; @metadata.#{key}; end], __FILE__, __LINE__)}
+      # end
+      # 
+      # delegate_to_metadata_methods :description
+
       # @attr_reader
       #
       # Returns the first exception raised in the context of running this

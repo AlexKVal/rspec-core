@@ -294,6 +294,77 @@ module RSpec
         end
       end
 
+      describe "'description' attribute" do
+        context "for Example" do
+          it "sets and gets a value" do
+            mfe = Metadata.new.for_example("example description", {:arbitrary => :options})
+            mfe.description.should eq("example description")
+            mfe.description = "other example"
+            mfe.description.should eq("other example")
+          end
+
+          context "with a string" do
+            it "provides the submitted description" do
+              mfe = Metadata.new.for_example("example", {})
+              mfe.description.should eq("example")
+            end
+          end
+
+          context "with a non-string" do
+            it "provides the submitted description" do
+              mfe = Metadata.new.for_example(Object, {})
+              mfe.description.should eq("Object")
+            end
+          end
+        end
+
+        context "for ExampleGroup" do
+          it "sets and gets a value" do
+            m = Metadata.new
+            m.for_example_group("group")
+            m[:example_group].description.should eq("group")
+            m[:example_group].description = "other group"
+            m[:example_group].description.should eq("other group")
+          end
+
+          context "with a string" do
+            it "provides the submitted description" do
+              m = Metadata.new
+              m.for_example_group("group")
+
+              m[:example_group].description.should eq("group")
+            end
+          end
+
+          context "with a non-string" do
+            xit "provides the submitted description" do
+              m = Metadata.new
+              m.for_example_group(Object)
+
+              m[:example_group].description.should eq("Object")
+            end
+          end
+
+          context "with a non-string and a string" do
+            xit "concats the args" do
+              m = Metadata.new
+              m.for_example_group(Object, 'group')
+
+              m[:example_group].description.should eq("Object group")
+            end
+          end
+
+          context "with empty args" do
+            xit "returns empty string for [:example_group][:description]" do
+              m = Metadata.new
+              m.for_example_group()
+
+              m[:example_group].description.should eq("")
+            end
+          end
+        end
+      end
+
       describe ":full_description" do
         it "concats example group name and description" do
           group_metadata = Metadata.new

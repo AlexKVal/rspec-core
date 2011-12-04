@@ -39,6 +39,15 @@ module RSpec
           end
         end
 
+        # ****************************************************************
+        def description=(value)
+          store(:description_args, [value])
+        end
+
+        def description
+          build_description_from(*self[:description_args])
+        end
+
       private
 
         def first_caller_from_outside_rspec
