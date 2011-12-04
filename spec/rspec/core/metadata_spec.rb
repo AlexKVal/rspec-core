@@ -319,46 +319,40 @@ module RSpec
         end
 
         context "for ExampleGroup" do
-          it "sets and gets a value" do
-            m = Metadata.new
-            m.for_example_group("group")
-            m[:example_group].description.should eq("group")
-            m[:example_group].description = "other group"
-            m[:example_group].description.should eq("other group")
-          end
-
           context "with a string" do
             it "provides the submitted description" do
               m = Metadata.new
               m.for_example_group("group")
-
               m[:example_group].description.should eq("group")
+              m[:example_group].description = "other group"
+              m[:example_group].description.should eq("other group")
             end
           end
 
           context "with a non-string" do
-            xit "provides the submitted description" do
+            it "provides the submitted description" do
               m = Metadata.new
               m.for_example_group(Object)
-
               m[:example_group].description.should eq("Object")
+              m[:example_group].description = Kernel
+              m[:example_group].description.should eq("Kernel")
             end
           end
 
           context "with a non-string and a string" do
-            xit "concats the args" do
+            it "concats the args" do
               m = Metadata.new
               m.for_example_group(Object, 'group')
-
               m[:example_group].description.should eq("Object group")
+              m[:example_group].description = Kernel, 'other group'
+              m[:example_group].description.should eq("Kernel other group")
             end
           end
 
           context "with empty args" do
-            xit "returns empty string for [:example_group][:description]" do
+            it "returns empty string for [:example_group].description" do
               m = Metadata.new
               m.for_example_group()
-
               m[:example_group].description.should eq("")
             end
           end

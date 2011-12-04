@@ -40,8 +40,8 @@ module RSpec
         end
 
         # ****************************************************************
-        def description=(value)
-          store(:description_args, [value])
+        def description=(*values)
+          store(:description_args, *values)
         end
 
         def description
