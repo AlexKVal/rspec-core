@@ -9,21 +9,21 @@ module RSpec
           it "prohibits :#{key} as a hash key" do
             m = Metadata.new
             expect do
-              m.process('group', key => {})
+              m.for_example_group('group', key => {})
             end.to raise_error(/:#{key} is not allowed/)
           end
         end
 
         it "uses :caller if passed as part of the user metadata" do
           m = Metadata.new
-          m.process('group', :caller => ['example_file:42'])
+          m.for_example_group('group', :caller => ['example_file:42'])
           m[:example_group][:location].should eq("example_file:42")
         end
       end
 
       describe "#filter_applies?" do
-        let(:parent_group_metadata) { Metadata.new.process('parent group', :caller => ["foo_spec.rb:#{__LINE__}"]) }
-        let(:group_metadata) { Metadata.new(parent_group_metadata).process('group', :caller => ["foo_spec.rb:#{__LINE__}"]) }
+        let(:parent_group_metadata) { Metadata.new.for_example_group('parent group', :caller => ["foo_spec.rb:#{__LINE__}"]) }
+        let(:group_metadata) { Metadata.new(parent_group_metadata).for_example_group('group', :caller => ["foo_spec.rb:#{__LINE__}"]) }
         let(:example_metadata) { group_metadata.for_example('example', :caller => ["foo_spec.rb:#{__LINE__}"], :if => true) }
         let(:next_example_metadata) { group_metadata.for_example('next_example', :caller => ["foo_spec.rb:#{example_line_number + 2}"]) }
         let(:world) { World.new }
@@ -134,7 +134,7 @@ module RSpec
       end
 
       describe "#for_example" do
-        let(:metadata)           { Metadata.new.process("group description") }
+        let(:metadata)           { Metadata.new.for_example_group("group description") }
         let(:mfe)                { metadata.for_example("example description", {:arbitrary => :options}) }
         let(:line_number)        { __LINE__ - 1 }
 
@@ -184,7 +184,7 @@ module RSpec
           context "with a String" do
             it "returns nil" do
               m = Metadata.new
-              m.process('group')
+              m.for_example_group('group')
 
               m[:example_group][key].should be_nil
             end
@@ -193,7 +193,7 @@ module RSpec
           context "with a Symbol" do
             it "returns nil" do
               m = Metadata.new
-              m.process(:group)
+              m.for_example_group(:group)
 
               m[:example_group][key].should be_nil
             end
@@ -202,7 +202,7 @@ module RSpec
           context "with a class" do
             it "returns the class" do
               m = Metadata.new
-              m.process(String)
+              m.for_example_group(String)
 
               m[:example_group][key].should be(String)
             end
@@ -211,34 +211,34 @@ module RSpec
           context "in a nested group" do
             it "returns the parent group's described class" do
               sm = Metadata.new
-              sm.process(String)
+              sm.for_example_group(String)
 
               m = Metadata.new(sm)
-              m.process(Array)
+              m.for_example_group(Array)
 
               m[:example_group][key].should be(String)
             end
 
             it "returns own described class if parent doesn't have one" do
               sm = Metadata.new
-              sm.process("foo")
+              sm.for_example_group("foo")
 
               m = Metadata.new(sm)
-              m.process(Array)
+              m.for_example_group(Array)
 
               m[:example_group][key].should be(Array)
             end
 
             it "can override a parent group's described class" do
               parent = Metadata.new
-              parent.process(String)
+              parent.for_example_group(String)
 
               child = Metadata.new(parent)
-              child.process(Fixnum)
+              child.for_example_group(Fixnum)
               child[:example_group][key] = Hash
 
               grandchild = Metadata.new(child)
-              grandchild.process(Array)
+              grandchild.for_example_group(Array)
 
               grandchild[:example_group][key].should be(Hash)
               child[:example_group][key].should be(Hash)
@@ -251,7 +251,7 @@ module RSpec
       describe ":description" do
         it "just has the example description" do
           m = Metadata.new
-          m.process("group")
+          m.for_example_group("group")
 
           m = m.for_example("example", {})
           m[:description].should eq("example")
@@ -260,7 +260,7 @@ module RSpec
         context "with a string" do
           it "provides the submitted description" do
             m = Metadata.new
-            m.process("group")
+            m.for_example_group("group")
 
             m[:example_group][:description].should eq("group")
           end
@@ -269,7 +269,7 @@ module RSpec
         context "with a non-string" do
           it "provides the submitted description" do
             m = Metadata.new
-            m.process(Object)
+            m.for_example_group(Object)
 
             m[:example_group][:description].should eq("Object")
           end
@@ -278,7 +278,7 @@ module RSpec
         context "with a non-string and a string" do
           it "concats the args" do
             m = Metadata.new
-            m.process(Object, 'group')
+            m.for_example_group(Object, 'group')
 
             m[:example_group][:description].should eq("Object group")
           end
@@ -287,7 +287,7 @@ module RSpec
         context "with empty args" do
           it "returns empty string for [:example_group][:description]" do
             m = Metadata.new
-            m.process()
+            m.for_example_group()
 
             m[:example_group][:description].should eq("")
           end
@@ -297,7 +297,7 @@ module RSpec
       describe ":full_description" do
         it "concats example group name and description" do
           group_metadata = Metadata.new
-          group_metadata.process('group')
+          group_metadata.for_example_group('group')
 
           example_metadata = group_metadata.for_example("example", {})
           example_metadata[:full_description].should eq("group example")
@@ -305,10 +305,10 @@ module RSpec
 
         it "concats nested example group descriptions" do
           parent = Metadata.new
-          parent.process('parent')
+          parent.for_example_group('parent')
 
           child = Metadata.new(parent)
-          child.process('child')
+          child.for_example_group('child')
 
           child[:example_group][:full_description].should eq("parent child")
           child.for_example('example', child)[:full_description].should eq("parent child example")
@@ -316,13 +316,13 @@ module RSpec
 
         it "concats nested example group descriptions three deep" do
           grandparent = Metadata.new
-          grandparent.process('grandparent')
+          grandparent.for_example_group('grandparent')
 
           parent = Metadata.new(grandparent)
-          parent.process('parent')
+          parent.for_example_group('parent')
 
           child = Metadata.new(parent)
-          child.process('child')
+          child.for_example_group('child')
 
           grandparent[:example_group][:full_description].should eq("grandparent")
           parent[:example_group][:full_description].should eq("grandparent parent")
@@ -334,7 +334,7 @@ module RSpec
           context "with a 2nd arg starting with #{char}" do
             it "removes the space" do
               m = Metadata.new
-              m.process(Array, "#{char}method")
+              m.for_example_group(Array, "#{char}method")
               m[:example_group][:full_description].should eq("Array#{char}method")
             end
           end
@@ -344,9 +344,9 @@ module RSpec
           context "with a nested description starting with #{char}" do
             it "removes the space" do
               parent = Metadata.new
-              parent.process("Object")
+              parent.for_example_group("Object")
               child = Metadata.new(parent)
-              child.process("#{char}method")
+              child.for_example_group("#{char}method")
               child[:example_group][:full_description].should eq("Object#{char}method")
             end
           end
@@ -356,7 +356,7 @@ module RSpec
       describe ":file_path" do
         it "finds the first non-rspec lib file in the caller array" do
           m = Metadata.new
-          m.process(:caller => [
+          m.for_example_group(:caller => [
                     "./lib/rspec/core/foo.rb",
                     "#{__FILE__}:#{__LINE__}"
           ])
@@ -367,19 +367,19 @@ module RSpec
       describe ":line_number" do
         it "finds the line number with the first non-rspec lib file in the backtrace" do
           m = Metadata.new
-          m.process({})
+          m.for_example_group({})
           m[:example_group][:line_number].should eq(__LINE__ - 1)
         end
 
         it "finds the line number with the first spec file with drive letter" do
           m = Metadata.new
-          m.process(:caller => [ "C:/path/to/file_spec.rb:#{__LINE__}" ])
+          m.for_example_group(:caller => [ "C:/path/to/file_spec.rb:#{__LINE__}" ])
           m[:example_group][:line_number].should eq(__LINE__ - 1)
         end
 
         it "uses the number after the first : for ruby 1.9" do
           m = Metadata.new
-          m.process(:caller => [ "#{__FILE__}:#{__LINE__}:999" ])
+          m.for_example_group(:caller => [ "#{__FILE__}:#{__LINE__}:999" ])
           m[:example_group][:line_number].should eq(__LINE__ - 1)
         end
       end
@@ -387,10 +387,10 @@ module RSpec
       describe "child example group" do
         it "nests the parent's example group metadata" do
           parent = Metadata.new
-          parent.process(Object, 'parent')
+          parent.for_example_group(Object, 'parent')
 
           child = Metadata.new(parent)
-          child.process()
+          child.for_example_group()
 
           child[:example_group][:example_group].should eq(parent[:example_group])
         end

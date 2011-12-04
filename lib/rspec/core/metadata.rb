@@ -17,11 +17,11 @@ module RSpec
           return super if has_key?(key)
           case key
           when :location
-            store(:location, location)
+            store(:location, "#{self[:file_path]}:#{self[:line_number]}")
           when :file_path, :line_number
-            file_path, line_number = file_and_line_number
-            store(:file_path, file_path)
-            store(:line_number, line_number)
+            first_caller_from_outside_rspec =~ /(.+?):(\d+)/
+            store(:file_path, $1)
+            store(:line_number, $2.to_i)
             super
           when :execution_result
             store(:execution_result, {})
@@ -31,7 +31,7 @@ module RSpec
             # TODO (2011-11-07 DC) deprecate :describes as a key
             store(:describes, klass)
           when :full_description
-            store(:full_description, full_description_for(self))
+            store(:full_description, full_description_for_self)
           when :description
             store(:description, build_description_from(*self[:description_args]))
           else
@@ -41,15 +41,6 @@ module RSpec
 
       private
 
-        def location
-          "#{self[:file_path]}:#{self[:line_number]}"
-        end
-
-        def file_and_line_number
-          first_caller_from_outside_rspec =~ /(.+?):(\d+)(|:\d+)/
-          return [$1, $2.to_i]
-        end
-
         def first_caller_from_outside_rspec
           self[:caller].detect {|l| l !~ /\/lib\/rspec\/core/}
         end
@@ -58,8 +49,8 @@ module RSpec
           m[:example_group][:described_class]
         end
 
-        def full_description_for(m)
-          build_description_from(m[:example_group][:full_description], *m[:description_args])
+        def full_description_for_self
+          build_description_from(self[:example_group][:full_description], *self[:description_args])
         end
 
         def build_description_from(*parts)
@@ -80,7 +71,7 @@ module RSpec
       module GroupMetadataHash
         include MetadataHash
 
-        private
+      private
 
         def described_class_for(*)
           ancestors.each do |g|
@@ -97,13 +88,9 @@ module RSpec
           nil
         end
 
-        def full_description_for(*)
-          build_description_from(*ancestors.reverse.map do |a|
-            a[:description_args]
-          end.flatten)
+        def full_description_for_self
+          build_description_from(*ancestors.reverse.map {|a| a[:description_args]}.flatten)
         end
-
-      private
 
         def ancestors
           @ancestors ||= begin
@@ -129,7 +116,7 @@ module RSpec
       end
 
       # @private
-      def process(*args)
+      def for_example_group(*args)
         user_metadata = args.last.is_a?(Hash) ? args.pop : {}
         ensure_valid_keys(user_metadata)
 
